@@ -38,7 +38,7 @@ Object.assign(RxAdapter.prototype, {
     return new RxAdapter(this.o.flatMapLatest(x => fn(x).get()))
   },
   skipDuplicates(eq) {
-    return new RxAdapter(this.o.distinctUntilChanged(x => x, eq))
+    return new RxAdapter(eq ? this.o.distinctUntilChanged(x => x, eq) : this.o.distinctUntilChanged())
   },
   toProperty() {
     return new RxAdapter(this.o.shareReplay(1), true)
