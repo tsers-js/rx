@@ -57,7 +57,7 @@ Object.assign(RxAdapter.prototype, {
 
 Object.assign(RxBus.prototype, {
   obs() {
-    return new RxAdapter(this.s.asObservable())
+    return new RxAdapter(this.s ? this.s.asObservable() : O.empty())
   },
   next(val) {
     this.s && this.s.onNext(val)
@@ -70,11 +70,11 @@ Object.assign(RxBus.prototype, {
       s.dispose()
     }
   },
-  error() {
+  error(err) {
     if (this.s) {
       const s = this.s
       this.s = void 0
-      s.onError()
+      s.onError(err)
       s.dispose()
     }
   }
@@ -94,10 +94,10 @@ Object.assign(RxAdapter, {
     return new RxAdapter(O.just(val))
   },
   never() {
-    return O.never()
+    return new RxAdapter(O.never())
   },
   empty() {
-    return O.empty()
+    return new RxAdapter(O.empty())
   },
   error(err) {
     return new RxAdapter(O.throw(err))
