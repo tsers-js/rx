@@ -48,6 +48,10 @@ Object.assign(RxAdapter.prototype, {
     const disposable = obs.connect()
     const dispose = () => disposable.dispose()
     return [new RxAdapter(obs, toProp), dispose]
+  },
+  subscribe(observer) {
+    const disposable = this.o.subscribe(observer.next, observer.error, observer.completed)
+    return () => disposable.dispose()
   }
 })
 
@@ -104,8 +108,14 @@ Object.assign(RxAdapter, {
   merge(obs) {
     return new RxAdapter(O.merge(obs.map(o => o.get())))
   },
-  disposeMany(disposables) {
-    const disposable = new Rx.CompositeDisposable(disposables)
+  subscriptionToDispose(disposable) {
+    return () => disposable.dispose()
+  },
+  disposeToSubscription(dispose) {
+    return {dispose}
+  },
+  disposeMany(disposes) {
+    const disposable = new Rx.CompositeDisposable(disposes.map(dispose => ({dispose})))
     return () => disposable.dispose()
   },
   bus() {
