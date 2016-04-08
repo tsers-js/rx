@@ -133,4 +133,4 @@ function toObserver(o) {
 
 
 Rx.TSERS = RxAdapter
-export default Rx
+module.exports = Rx
