@@ -29,10 +29,10 @@ Object.assign(RxAdapter.prototype, {
     return new RxAdapter(this.o.scan(fn, seed))
   },
   flatMap(fn) {
-    return new RxAdapter(this.o.flatMap(x => fn(x).return()))
+    return new RxAdapter(this.o.flatMap(x => fn(x).get()))
   },
   flatMapLatest(fn) {
-    return new RxAdapter(this.o.flatMapLatest(x => fn(x).return()))
+    return new RxAdapter(this.o.flatMapLatest(x => fn(x).get()))
   },
   skipDuplicates(eq) {
     return new RxAdapter(this.o.distinctUntilChanged(x => x, eq))
@@ -96,10 +96,10 @@ Object.assign(RxAdapter, {
     return new RxAdapter(O.throw(err))
   },
   combine(list) {
-    return new RxAdapter(list.length === 0 ? O.just([]) : O.combineLatest(list.map(o => o.return())))
+    return new RxAdapter(list.length === 0 ? O.just([]) : O.combineLatest(list.map(o => o.get())))
   },
   merge(obs) {
-    return new RxAdapter(O.merge(obs.map(o => o.return())))
+    return new RxAdapter(O.merge(obs.map(o => o.get())))
   },
   disposeMany(disposables) {
     const disposable = new Rx.CompositeDisposable(disposables)
