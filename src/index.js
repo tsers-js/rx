@@ -19,6 +19,9 @@ Object.assign(RxAdapter.prototype, {
   map(fn) {
     return new RxAdapter(this.o.map(fn))
   },
+  tap(fn) {
+    return new RxAdapter(this.o.do(fn))
+  },
   filter(fn) {
     return new RxAdapter(this.o.filter(fn))
   },
