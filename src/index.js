@@ -86,6 +86,12 @@ Object.assign(RxAdapter, {
   just(val) {
     return new RxAdapter(O.just(val))
   },
+  never() {
+    return O.never()
+  },
+  empty() {
+    return O.empty()
+  },
   error(err) {
     return new RxAdapter(O.throw(err))
   },
