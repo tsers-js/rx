@@ -29,7 +29,7 @@ Object.assign(RxAdapter.prototype, {
     return new RxAdapter(this.o.doOnCompleted(fn))
   },
   scan(fn, seed) {
-    return new RxAdapter(this.o.scan(fn, seed))
+    return new RxAdapter(this.o.startWith(seed).scan(fn))
   },
   flatMap(fn) {
     return new RxAdapter(this.o.flatMap(x => fn(x).get()))
