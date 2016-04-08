@@ -10,7 +10,7 @@ function RxBus() {
 }
 
 Object.assign(RxAdapter.prototype, {
-  return() {
+  get() {
     return this.shared ? this.o : this.o.share()
   },
   multicast() {
