@@ -1,6 +1,6 @@
 {
   "name": "@tsers/rx",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": false,
   "description": "TSERSful RxJS 4 bindings",
   "main": "dist/tsers.rx.js",
