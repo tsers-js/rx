@@ -1,8 +1,7 @@
 import Rx, {Observable as O} from "rx"
 
-function RxAdapter(obs, shared) {
+function RxAdapter(obs) {
   this.o = obs
-  this.shared = shared || false
 }
 
 function RxBus() {
@@ -10,11 +9,14 @@ function RxBus() {
 }
 
 Object.assign(RxAdapter.prototype, {
-  get() {
-    return this.shared ? this.o : this.o.share()
+  get(multicast) {
+    return multicast !== false ? this.o.share() : this.o
+  },
+  getp() {
+    return this.o.shareReplay(1)
   },
   multicast() {
-    return new RxAdapter(this.shared ? this.o : this.o.share(), true)
+    return new RxAdapter(this.o.share())
   },
   map(fn) {
     return new RxAdapter(this.o.map(fn))
@@ -32,22 +34,19 @@ Object.assign(RxAdapter.prototype, {
     return new RxAdapter(this.o.startWith(seed).scan(fn))
   },
   flatMap(fn) {
-    return new RxAdapter(this.o.flatMap(x => fn(x).get()))
+    return new RxAdapter(this.o.flatMap(x => fn(x).get(false)))
   },
   flatMapLatest(fn) {
-    return new RxAdapter(this.o.flatMapLatest(x => fn(x).get()))
+    return new RxAdapter(this.o.flatMapLatest(x => fn(x).get(false)))
   },
   skipDuplicates(eq) {
     return new RxAdapter(eq ? this.o.distinctUntilChanged(x => x, eq) : this.o.distinctUntilChanged())
   },
-  toProperty() {
-    return new RxAdapter(this.o.shareReplay(1), true)
-  },
-  hot(toProp) {
-    const obs = toProp ? this.o.replay(null, 1) : this.o.publish()
+  hot(replay) {
+    const obs = replay ? this.o.replay(null, 1) : this.o.publish()
     const disposable = obs.connect()
     const dispose = () => disposable.dispose()
-    return [new RxAdapter(obs, toProp), dispose]
+    return [new RxAdapter(obs), dispose]
   },
   subscribe(observer) {
     const disposable = this.o.subscribe(observer.next, observer.error, observer.completed)
@@ -103,10 +102,10 @@ Object.assign(RxAdapter, {
     return new RxAdapter(O.throw(err))
   },
   combine(list) {
-    return new RxAdapter(list.length === 0 ? O.just([]) : O.combineLatest(list.map(o => o.get())))
+    return new RxAdapter(list.length === 0 ? O.just([]) : O.combineLatest(list.map(o => o.get(false))))
   },
   merge(obs) {
-    return new RxAdapter(O.merge(obs.map(o => o.get())))
+    return new RxAdapter(O.merge(obs.map(o => o.get(false))))
   },
   subscriptionToDispose(disposable) {
     return () => disposable.dispose()
