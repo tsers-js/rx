@@ -1,6 +1,6 @@
 import Rx, {Observable as O} from "rx"
 
-function RxAdapter(obs) {
+function RxObs(obs) {
   this.o = obs
 }
 
@@ -8,7 +8,7 @@ function RxBus() {
   this.s = new Rx.Subject()
 }
 
-Object.assign(RxAdapter.prototype, {
+Object.assign(RxObs.prototype, {
   get(multicast) {
     return multicast !== false ? this.o.share() : this.o
   },
@@ -16,37 +16,37 @@ Object.assign(RxAdapter.prototype, {
     return this.o.shareReplay(1)
   },
   multicast() {
-    return new RxAdapter(this.o.share())
+    return new RxObs(this.o.share())
   },
   map(fn) {
-    return new RxAdapter(this.o.map(fn))
+    return new RxObs(this.o.map(fn))
   },
   tap(fn) {
-    return new RxAdapter(this.o.do(fn))
+    return new RxObs(this.o.do(fn))
   },
   filter(fn) {
-    return new RxAdapter(this.o.filter(fn))
+    return new RxObs(this.o.filter(fn))
   },
   doOnCompleted(fn) {
-    return new RxAdapter(this.o.doOnCompleted(fn))
+    return new RxObs(this.o.doOnCompleted(fn))
   },
   scan(fn, seed) {
-    return new RxAdapter(this.o.startWith(seed).scan(fn))
+    return new RxObs(this.o.startWith(seed).scan(fn))
   },
   flatMap(fn) {
-    return new RxAdapter(this.o.flatMap(x => fn(x).get(false)))
+    return new RxObs(this.o.flatMap(x => fn(x).get(false)))
   },
   flatMapLatest(fn) {
-    return new RxAdapter(this.o.flatMapLatest(x => fn(x).get(false)))
+    return new RxObs(this.o.flatMapLatest(x => fn(x).get(false)))
   },
   skipDuplicates(eq) {
-    return new RxAdapter(eq ? this.o.distinctUntilChanged(x => x, eq) : this.o.distinctUntilChanged())
+    return new RxObs(eq ? this.o.distinctUntilChanged(x => x, eq) : this.o.distinctUntilChanged())
   },
   hot(replay) {
     const obs = replay ? this.o.replay(null, 1) : this.o.publish()
     const disposable = obs.connect()
     const dispose = () => disposable.dispose()
-    return [new RxAdapter(obs), dispose]
+    return [new RxObs(obs), dispose]
   },
   subscribe(observer) {
     const disposable = this.o.subscribe(observer.next, observer.error, observer.completed)
@@ -56,7 +56,7 @@ Object.assign(RxAdapter.prototype, {
 
 Object.assign(RxBus.prototype, {
   obs() {
-    return new RxAdapter(this.s ? this.s.asObservable() : O.empty())
+    return new RxObs(this.s ? this.s.asObservable() : O.empty())
   },
   next(val) {
     this.s && this.s.onNext(val)
@@ -80,32 +80,32 @@ Object.assign(RxBus.prototype, {
 })
 
 
-Object.assign(RxAdapter, {
+Object.assign(RxObs, {
   is(obs) {
     return obs && O.isObservable(obs)
   },
   create(fn) {
-    return new RxAdapter(O.create(o => {
+    return new RxObs(O.create(o => {
       return fn(toObserver(o))
     }))
   },
   just(val) {
-    return new RxAdapter(O.just(val))
+    return new RxObs(O.just(val))
   },
   never() {
-    return new RxAdapter(O.never())
+    return new RxObs(O.never())
   },
   empty() {
-    return new RxAdapter(O.empty())
+    return new RxObs(O.empty())
   },
   error(err) {
-    return new RxAdapter(O.throw(err))
+    return new RxObs(O.throw(err))
   },
   combine(list) {
-    return new RxAdapter(list.length === 0 ? O.just([]) : O.combineLatest(list.map(o => o.get(false))))
+    return new RxObs(list.length === 0 ? O.just([]) : O.combineLatest(list.map(o => o.get(false))))
   },
   merge(obs) {
-    return new RxAdapter(O.merge(obs.map(o => o.get(false))))
+    return new RxObs(O.merge(obs.map(o => o.get(false))))
   },
   subscriptionToDispose(disposable) {
     return () => disposable.dispose()
@@ -131,5 +131,5 @@ function toObserver(o) {
 }
 
 
-Rx.TSERS = RxAdapter
+Rx.TSERS = RxObs
 module.exports = Rx
